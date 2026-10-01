@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+
 import {
     Application,
     Graphics,
@@ -9,6 +10,7 @@ import { PlayerShip } from './PlayerShip'
 import { Projectile } from './Projectile'
 import { EnemyShip } from './EnemyShip'
 import { ShooterShip } from './ShooterShip'
+
 import type { MatchResult } from '../types/game'
 
 type Enemy = EnemyShip | ShooterShip
@@ -26,6 +28,7 @@ type GameCanvasProps = {
         result: MatchResult
     ) => void
 }
+
 export function GameCanvas({
     playerName,
     duration,
@@ -34,14 +37,25 @@ export function GameCanvas({
     const containerRef =
         useRef<HTMLDivElement>(null)
 
+    // Referência para que os controles React/touch
+    // consigam controlar o mesmo PlayerShip do Pixi.
+    const playerRef =
+        useRef<PlayerShip | null>(null)
+
+    // Permite que o botão de pause mobile
+    // use a mesma função de pause do jogo.
+    const pauseToggleRef =
+        useRef<(() => void) | null>(null)
+
     useEffect(() => {
         const app = new Application()
 
         let destroyed = false
 
-        // Essa função será preenchida depois que
-        // os listeners de pause forem criados.
-        let removeRuntimeListeners = () => { }
+        // Será preenchida depois que
+        // os listeners forem criados.
+        let removeRuntimeListeners =
+            () => { }
 
         const startGame = async () => {
             await app.init({
@@ -56,14 +70,14 @@ export function GameCanvas({
                 return
             }
 
-            if (!containerRef.current) return
+            if (!containerRef.current) {
+                return
+            }
 
             containerRef.current.appendChild(
                 app.canvas
             )
 
-            // Permite controlar a ordem visual
-            // através do zIndex.
             app.stage.sortableChildren = true
 
             // =========================
@@ -71,7 +85,12 @@ export function GameCanvas({
             // =========================
 
             const arena = new Graphics()
-                .rect(40, 40, 1200, 640)
+                .rect(
+                    40,
+                    40,
+                    1200,
+                    640
+                )
                 .fill(0x167d9a)
                 .stroke({
                     width: 4,
@@ -133,24 +152,28 @@ export function GameCanvas({
                 )
             }
 
-            // Verifica colisão circular
-            // contra qualquer ilha.
             const collidesWithIsland = (
                 x: number,
                 y: number,
                 objectRadius: number
             ) => {
                 for (const island of islands) {
-                    const dx = x - island.x
-                    const dy = y - island.y
+                    const dx =
+                        x - island.x
 
-                    const distance = Math.sqrt(
-                        dx * dx + dy * dy
-                    )
+                    const dy =
+                        y - island.y
+
+                    const distance =
+                        Math.sqrt(
+                            dx * dx +
+                            dy * dy
+                        )
 
                     if (
                         distance <
-                        island.radius + objectRadius
+                        island.radius +
+                        objectRadius
                     ) {
                         return true
                     }
@@ -167,7 +190,8 @@ export function GameCanvas({
             let gameOver = false
             let isPaused = false
 
-            const GAME_DURATION = duration
+            const GAME_DURATION =
+                duration
 
             let timeRemaining =
                 GAME_DURATION
@@ -176,14 +200,15 @@ export function GameCanvas({
             // HUD
             // =========================
 
-            const scoreText = new Text({
-                text: 'Score: 0',
-                style: {
-                    fill: 0xffffff,
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                },
-            })
+            const scoreText =
+                new Text({
+                    text: 'Score: 0',
+                    style: {
+                        fill: 0xffffff,
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                    },
+                })
 
             scoreText.position.set(
                 60,
@@ -192,14 +217,15 @@ export function GameCanvas({
 
             scoreText.zIndex = 100
 
-            const timeText = new Text({
-                text: `Time: ${GAME_DURATION}`,
-                style: {
-                    fill: 0xffffff,
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                },
-            })
+            const timeText =
+                new Text({
+                    text: `Time: ${GAME_DURATION}`,
+                    style: {
+                        fill: 0xffffff,
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                    },
+                })
 
             timeText.position.set(
                 550,
@@ -208,14 +234,15 @@ export function GameCanvas({
 
             timeText.zIndex = 100
 
-            const hpText = new Text({
-                text: 'HP: 3 / 3',
-                style: {
-                    fill: 0xffffff,
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                },
-            })
+            const hpText =
+                new Text({
+                    text: 'HP: 3 / 3',
+                    style: {
+                        fill: 0xffffff,
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                    },
+                })
 
             hpText.position.set(
                 1080,
@@ -262,6 +289,8 @@ export function GameCanvas({
                 return
             }
 
+            playerRef.current = player
+
             player.sprite.zIndex = 10
 
             app.stage.addChild(
@@ -285,8 +314,11 @@ export function GameCanvas({
                         alpha: 0.65,
                     })
 
-            pauseOverlay.visible = false
-            pauseOverlay.zIndex = 1000
+            pauseOverlay.visible =
+                false
+
+            pauseOverlay.zIndex =
+                1000
 
             const pauseText =
                 new Text({
@@ -308,6 +340,7 @@ export function GameCanvas({
             )
 
             pauseText.visible = false
+
             pauseText.zIndex = 1001
 
             app.stage.addChild(
@@ -318,7 +351,9 @@ export function GameCanvas({
             const setPaused = (
                 paused: boolean
             ) => {
-                if (gameOver) return
+                if (gameOver) {
+                    return
+                }
 
                 isPaused = paused
 
@@ -333,6 +368,13 @@ export function GameCanvas({
                 )
             }
 
+            // Faz o botão mobile usar
+            // exatamente a mesma lógica.
+            pauseToggleRef.current =
+                () => {
+                    setPaused(!isPaused)
+                }
+
             const handlePauseKey = (
                 event: KeyboardEvent
             ) => {
@@ -343,13 +385,13 @@ export function GameCanvas({
                     return
                 }
 
-                if (gameOver) return
+                if (gameOver) {
+                    return
+                }
 
                 setPaused(!isPaused)
             }
 
-            // Se sair da janela,
-            // pausa automaticamente.
             const handleBlur = () => {
                 if (
                     !gameOver &&
@@ -359,15 +401,15 @@ export function GameCanvas({
                 }
             }
 
-            // Também cobre troca de aba.
-            const handleVisibility = () => {
-                if (
-                    document.hidden &&
-                    !gameOver
-                ) {
-                    setPaused(true)
+            const handleVisibility =
+                () => {
+                    if (
+                        document.hidden &&
+                        !gameOver
+                    ) {
+                        setPaused(true)
+                    }
                 }
-            }
 
             window.addEventListener(
                 'keydown',
@@ -384,52 +426,61 @@ export function GameCanvas({
                 handleVisibility
             )
 
-            // Agora o cleanup consegue
-            // chamar esta função.
-            removeRuntimeListeners = () => {
-                window.removeEventListener(
-                    'keydown',
-                    handlePauseKey
-                )
+            removeRuntimeListeners =
+                () => {
+                    window.removeEventListener(
+                        'keydown',
+                        handlePauseKey
+                    )
 
-                window.removeEventListener(
-                    'blur',
-                    handleBlur
-                )
+                    window.removeEventListener(
+                        'blur',
+                        handleBlur
+                    )
 
-                document.removeEventListener(
-                    'visibilitychange',
-                    handleVisibility
-                )
-            }
+                    document.removeEventListener(
+                        'visibilitychange',
+                        handleVisibility
+                    )
+                }
 
             // =========================
             // GAME OVER
             // =========================
 
             const showGameOver = (
-                reason: 'Destroyed' | 'Time'
+                reason:
+                    | 'Destroyed'
+                    | 'Time'
             ) => {
                 if (gameOver) return
 
                 gameOver = true
                 isPaused = false
 
-                player.setInputEnabled(false)
+                player.setInputEnabled(
+                    false
+                )
 
-                pauseOverlay.visible = false
-                pauseText.visible = false
+                pauseOverlay.visible =
+                    false
+
+                pauseText.visible =
+                    false
 
                 const elapsedTime =
                     GAME_DURATION -
                     timeRemaining
 
-                const result: MatchResult = {
+                const result:
+                    MatchResult = {
                     playerName,
                     score,
 
                     duration:
-                        Math.ceil(elapsedTime),
+                        Math.ceil(
+                            elapsedTime
+                        ),
 
                     survived:
                         reason === 'Time',
@@ -447,14 +498,19 @@ export function GameCanvas({
             // INIMIGOS
             // =========================
 
-            const enemies: Enemy[] = []
+            const enemies:
+                Enemy[] = []
 
             const destroyedEnemyTimers =
-                new Map<Enemy, number>()
+                new Map<
+                    Enemy,
+                    number
+                >()
 
             const MAX_ENEMIES = 4
 
             let spawnTimer = 0
+
             let spawningEnemies = 0
 
             const spawnPoints = [
@@ -476,14 +532,15 @@ export function GameCanvas({
                 },
             ]
 
-            const getRandomSpawn = () => {
-                return spawnPoints[
-                    Math.floor(
-                        Math.random() *
-                        spawnPoints.length
-                    )
-                ]
-            }
+            const getRandomSpawn =
+                () => {
+                    return spawnPoints[
+                        Math.floor(
+                            Math.random() *
+                            spawnPoints.length
+                        )
+                    ]
+                }
 
             const spawnChaser =
                 async () => {
@@ -507,7 +564,8 @@ export function GameCanvas({
                         return
                     }
 
-                    enemy.sprite.zIndex = 10
+                    enemy.sprite.zIndex =
+                        10
 
                     enemies.push(enemy)
 
@@ -538,7 +596,8 @@ export function GameCanvas({
                         return
                     }
 
-                    enemy.sprite.zIndex = 10
+                    enemy.sprite.zIndex =
+                        10
 
                     enemies.push(enemy)
 
@@ -547,9 +606,8 @@ export function GameCanvas({
                     )
                 }
 
-            // Começamos com os dois
-            // tipos de inimigo.
             await spawnChaser()
+
             await spawnShooter()
 
             // =========================
@@ -653,8 +711,6 @@ export function GameCanvas({
                         ticker.deltaMS /
                         1000
 
-                    // Pausa significa:
-                    // nenhuma simulação avança.
                     if (
                         gameOver ||
                         isPaused
@@ -683,7 +739,10 @@ export function GameCanvas({
                     if (
                         timeRemaining <= 0
                     ) {
-                        showGameOver('Time')
+                        showGameOver(
+                            'Time'
+                        )
+
                         return
                     }
 
@@ -701,8 +760,6 @@ export function GameCanvas({
                         deltaSeconds
                     )
 
-                    // Se entrou numa ilha,
-                    // volta para a posição anterior.
                     if (
                         collidesWithIsland(
                             player.sprite.x,
@@ -764,8 +821,6 @@ export function GameCanvas({
                             player.sprite.y
                         )
 
-                        // Inimigos também
-                        // não atravessam ilhas.
                         if (
                             collidesWithIsland(
                                 enemy.sprite.x,
@@ -830,10 +885,8 @@ export function GameCanvas({
                                         `HP: ${player.getHp()} / 3`
                                 }
 
-                                // O Chaser se destrói
-                                // quando bate no jogador.
-                                //
-                                // Não soma score.
+                                // Chaser se destrói
+                                // ao colidir.
                                 enemy.takeDamage()
                                 enemy.takeDamage()
                                 enemy.takeDamage()
@@ -938,8 +991,6 @@ export function GameCanvas({
                             deltaSeconds
                         )
 
-                        // Ilha bloqueia
-                        // projétil do jogador.
                         if (
                             projectile.active &&
                             collidesWithIsland(
@@ -952,7 +1003,6 @@ export function GameCanvas({
                                 false
                         }
 
-                        // Colisão contra inimigos.
                         for (
                             const enemy of enemies
                         ) {
@@ -992,9 +1042,6 @@ export function GameCanvas({
                                     wasAlive &&
                                     !enemy.active
                                 ) {
-                                    // Um inimigo
-                                    // destruído por tiro
-                                    // vale 1 ponto.
                                     score += 1
 
                                     scoreText.text =
@@ -1040,8 +1087,6 @@ export function GameCanvas({
                             deltaSeconds
                         )
 
-                        // Ilha também protege
-                        // contra tiro inimigo.
                         if (
                             projectile.active &&
                             collidesWithIsland(
@@ -1171,19 +1216,210 @@ export function GameCanvas({
         return () => {
             destroyed = true
 
-            // Agora funciona porque o
-            // cleanup guarda uma função,
-            // não tenta acessar variáveis
-            // fora do escopo.
+            playerRef.current = null
+
+            pauseToggleRef.current =
+                null
+
             removeRuntimeListeners()
 
             if (app.renderer) {
                 app.destroy(true)
             }
         }
-    }, [])
+    }, [
+        duration,
+        onGameOver,
+        playerName,
+    ])
 
     return (
-        <div ref={containerRef} />
+        <div
+            className="game-canvas-wrapper"
+            onContextMenu={(event) =>
+                event.preventDefault()
+            }
+        >
+            <div ref={containerRef} />
+
+            <div
+                className="touch-controls"
+                aria-label="Touch game controls"
+            >
+                <div className="touch-movement">
+                    <button
+                        className="touch-button touch-up"
+                        aria-label="Move forward"
+                        onPointerDown={() =>
+                            playerRef.current?.setMovementControl(
+                                'forward',
+                                true
+                            )
+                        }
+                        onPointerUp={() =>
+                            playerRef.current?.setMovementControl(
+                                'forward',
+                                false
+                            )
+                        }
+                        onPointerCancel={() =>
+                            playerRef.current?.setMovementControl(
+                                'forward',
+                                false
+                            )
+                        }
+                        onPointerLeave={() =>
+                            playerRef.current?.setMovementControl(
+                                'forward',
+                                false
+                            )
+                        }
+                    >
+                        ▲
+                    </button>
+
+                    <button
+                        className="touch-button touch-left"
+                        aria-label="Turn left"
+                        onPointerDown={() =>
+                            playerRef.current?.setMovementControl(
+                                'left',
+                                true
+                            )
+                        }
+                        onPointerUp={() =>
+                            playerRef.current?.setMovementControl(
+                                'left',
+                                false
+                            )
+                        }
+                        onPointerCancel={() =>
+                            playerRef.current?.setMovementControl(
+                                'left',
+                                false
+                            )
+                        }
+                        onPointerLeave={() =>
+                            playerRef.current?.setMovementControl(
+                                'left',
+                                false
+                            )
+                        }
+                    >
+                        ◀
+                    </button>
+
+                    <button
+                        className="touch-button touch-down"
+                        aria-label="Move backward"
+                        onPointerDown={() =>
+                            playerRef.current?.setMovementControl(
+                                'backward',
+                                true
+                            )
+                        }
+                        onPointerUp={() =>
+                            playerRef.current?.setMovementControl(
+                                'backward',
+                                false
+                            )
+                        }
+                        onPointerCancel={() =>
+                            playerRef.current?.setMovementControl(
+                                'backward',
+                                false
+                            )
+                        }
+                        onPointerLeave={() =>
+                            playerRef.current?.setMovementControl(
+                                'backward',
+                                false
+                            )
+                        }
+                    >
+                        ▼
+                    </button>
+
+                    <button
+                        className="touch-button touch-right"
+                        aria-label="Turn right"
+                        onPointerDown={() =>
+                            playerRef.current?.setMovementControl(
+                                'right',
+                                true
+                            )
+                        }
+                        onPointerUp={() =>
+                            playerRef.current?.setMovementControl(
+                                'right',
+                                false
+                            )
+                        }
+                        onPointerCancel={() =>
+                            playerRef.current?.setMovementControl(
+                                'right',
+                                false
+                            )
+                        }
+                        onPointerLeave={() =>
+                            playerRef.current?.setMovementControl(
+                                'right',
+                                false
+                            )
+                        }
+                    >
+                        ▶
+                    </button>
+                </div>
+
+                <div className="touch-actions">
+                    <button
+                        className="touch-button"
+                        aria-label="Left broadside"
+                        onPointerDown={() =>
+                            playerRef.current?.requestAttack(
+                                'left'
+                            )
+                        }
+                    >
+                        L
+                    </button>
+
+                    <button
+                        className="touch-button touch-fire"
+                        aria-label="Fire front cannon"
+                        onPointerDown={() =>
+                            playerRef.current?.requestAttack(
+                                'front'
+                            )
+                        }
+                    >
+                        FIRE
+                    </button>
+
+                    <button
+                        className="touch-button"
+                        aria-label="Right broadside"
+                        onPointerDown={() =>
+                            playerRef.current?.requestAttack(
+                                'right'
+                            )
+                        }
+                    >
+                        R
+                    </button>
+
+                    <button
+                        className="touch-button touch-pause"
+                        aria-label="Pause game"
+                        onClick={() =>
+                            pauseToggleRef.current?.()
+                        }
+                    >
+                        Ⅱ
+                    </button>
+                </div>
+            </div>
+        </div>
     )
 }

@@ -8,12 +8,11 @@
   align-items: center;
   justify-content: center;
   background: #04141d;
+  overflow: hidden;
 }
 
 .app canvas {
   display: block;
-  max-width: 100vw;
-  max-height: 100vh;
 }
 
 .screen {
@@ -34,8 +33,7 @@
 }
 
 .panel {
-  width: min(440px,
-      100%);
+  width: min(440px, 100%);
 
   padding: 40px;
 
@@ -69,13 +67,11 @@
 }
 
 .wide-panel {
-  width: min(800px,
-      100%);
+  width: min(800px, 100%);
 }
 
 .panel h1 {
   margin: 0 0 10px;
-
   font-size: 42px;
 }
 
@@ -92,7 +88,6 @@
 
 .subtitle {
   margin-top: -10px;
-
   opacity: 0.7;
 }
 
@@ -145,7 +140,6 @@ select:focus-visible {
 
 .primary-button {
   background: #167d9a;
-
   font-weight: 700;
 }
 
@@ -187,9 +181,9 @@ select {
 
 .result-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(3,
-      1fr);
+    repeat(3, 1fr);
 
   gap: 10px;
 }
@@ -257,6 +251,238 @@ select {
   font-weight: 700;
 }
 
+/* =========================
+   GAME CANVAS
+   ========================= */
+
+.game-canvas-wrapper {
+  position: relative;
+
+  width:
+    min(100vw,
+      calc(100vh * 16 / 9));
+
+  height:
+    min(100vh,
+      calc(100vw * 9 / 16));
+
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  background: #04141d;
+
+  touch-action: none;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.game-canvas-wrapper>div:first-child {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+.game-canvas-wrapper canvas {
+  display: block;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* =========================
+   TOUCH CONTROLS
+   ========================= */
+
+.touch-controls {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .touch-controls {
+    position: absolute;
+
+    left: 2%;
+    right: 2%;
+    bottom: 3%;
+
+    z-index: 5000;
+
+    display: flex;
+
+    align-items: flex-end;
+    justify-content: space-between;
+
+    pointer-events: none;
+  }
+
+  .touch-movement {
+    display: grid;
+
+    grid-template-columns:
+      repeat(3,
+        clamp(34px,
+          5.2vw,
+          52px));
+
+    grid-template-rows:
+      repeat(2,
+        clamp(34px,
+          5.2vw,
+          52px));
+
+    gap: clamp(2px,
+        0.5vw,
+        5px);
+
+    pointer-events: none;
+  }
+
+  .touch-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2,
+        clamp(38px,
+          5.5vw,
+          56px));
+
+    gap: clamp(4px,
+        0.7vw,
+        7px);
+
+    pointer-events: none;
+  }
+
+  .touch-button {
+    width:
+      clamp(34px,
+        5.2vw,
+        52px);
+
+    height:
+      clamp(34px,
+        5.2vw,
+        52px);
+
+    min-width: 0;
+    min-height: 0;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+      1px solid rgba(255,
+        255,
+        255,
+        0.5);
+
+    border-radius: 50%;
+
+    background:
+      rgba(4,
+        20,
+        29,
+        0.72);
+
+    color: white;
+
+    font-size:
+      clamp(12px,
+        1.7vw,
+        18px);
+
+    font-weight: 700;
+
+    backdrop-filter:
+      blur(5px);
+
+    pointer-events: auto;
+
+    touch-action: none;
+
+    box-shadow:
+      0 2px 8px rgba(0,
+        0,
+        0,
+        0.3);
+  }
+
+  .touch-button:active {
+    transform:
+      scale(0.9);
+
+    background:
+      rgba(22,
+        125,
+        154,
+        0.95);
+  }
+
+  .touch-up {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .touch-left {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .touch-down {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .touch-right {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .touch-fire {
+    width:
+      clamp(38px,
+        5.8vw,
+        58px);
+
+    height:
+      clamp(38px,
+        5.8vw,
+        58px);
+
+    font-size:
+      clamp(9px,
+        1.2vw,
+        12px);
+
+    background:
+      rgba(22,
+        125,
+        154,
+        0.9);
+  }
+
+  .touch-pause {
+    font-size:
+      clamp(11px,
+        1.5vw,
+        15px);
+  }
+}
+
+/* =========================
+   TELAS MENORES
+   ========================= */
+
 @media (max-width: 650px) {
   .screen {
     padding: 16px;
@@ -282,5 +508,191 @@ select {
 
   .history-row span:last-child {
     display: none;
+  }
+}
+
+/* =========================
+   CELULAR LANDSCAPE
+   ========================= */
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+
+  .touch-controls {
+    left: 1.5%;
+    right: 1.5%;
+    bottom: 2%;
+  }
+
+  .touch-movement {
+    grid-template-columns:
+      repeat(3,
+        clamp(30px,
+          4.7vw,
+          44px));
+
+    grid-template-rows:
+      repeat(2,
+        clamp(30px,
+          4.7vw,
+          44px));
+  }
+
+  .touch-actions {
+    grid-template-columns:
+      repeat(2,
+        clamp(34px,
+          5vw,
+          48px));
+  }
+
+  .touch-button {
+    width:
+      clamp(30px,
+        4.7vw,
+        44px);
+
+    height:
+      clamp(30px,
+        4.7vw,
+        44px);
+  }
+
+  .touch-fire {
+    width:
+      clamp(34px,
+        5vw,
+        48px);
+
+    height:
+      clamp(34px,
+        5vw,
+        48px);
+  }
+}
+
+/* =========================================
+   MOBILE LANDSCAPE - TELAS DE MENU/RESULTADOS
+   ========================================= */
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+  .screen {
+    width: 100vw;
+    height: 100vh;
+    min-height: 0;
+
+    padding: 10px;
+
+    align-items: center;
+
+    overflow-y: auto;
+  }
+
+  .panel {
+    width: min(760px, 96vw);
+
+    padding: 16px 24px;
+
+    gap: 8px;
+
+    border-radius: 12px;
+  }
+
+  .menu-panel {
+    width: min(420px, 92vw);
+  }
+
+  .wide-panel {
+    width: min(850px, 96vw);
+  }
+
+  .panel h1 {
+    margin: 0;
+
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+
+    letter-spacing: 3px;
+  }
+
+  .subtitle {
+    margin: 0;
+
+    font-size: 13px;
+  }
+
+  button,
+  input,
+  select {
+    min-height: 36px;
+  }
+
+  button {
+    padding: 7px 12px;
+
+    font-size: 13px;
+  }
+
+  input,
+  select {
+    height: 36px;
+
+    font-size: 13px;
+  }
+
+  label {
+    gap: 4px;
+
+    font-size: 13px;
+  }
+
+  /* =========================
+     RESULTS
+     ========================= */
+
+  .result-score {
+    font-size: 48px;
+
+    line-height: 1;
+
+    margin: 0;
+  }
+
+  .result-grid {
+    grid-template-columns:
+      repeat(3, 1fr);
+
+    gap: 8px;
+  }
+
+  .result-grid div {
+    padding: 8px 12px;
+
+    gap: 2px;
+
+    font-size: 13px;
+  }
+
+  /* =========================
+     RANKING / HISTORY
+     ========================= */
+
+  .table {
+    max-height: 220px;
+  }
+
+  .table-row {
+    padding: 7px 12px;
+
+    font-size: 12px;
+  }
+
+  .history-row {
+    grid-template-columns:
+      1fr 70px 100px 1fr;
   }
 }

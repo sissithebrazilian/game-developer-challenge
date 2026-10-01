@@ -2,6 +2,12 @@ import { Assets, Sprite, Texture } from 'pixi.js'
 
 export type AttackType = 'front' | 'left' | 'right'
 
+export type MovementControl =
+    | 'forward'
+    | 'backward'
+    | 'left'
+    | 'right'
+
 export class PlayerShip {
     public sprite!: Sprite
     public active = true
@@ -17,10 +23,17 @@ export class PlayerShip {
     private criticalTexture!: Texture
     private destroyedTexture!: Texture
 
+    // Controles de teclado.
     private keys = new Set<string>()
+
+    // Controles virtuais para celular/tablet.
+    private touchControls =
+        new Set<MovementControl>()
+
     private inputEnabled = true
 
-    private requestedAttack: AttackType | null = null
+    private requestedAttack:
+        AttackType | null = null
 
     private frontCooldown = 0
     private sideCooldown = 0
@@ -35,135 +48,314 @@ export class PlayerShip {
             criticalTexture,
             destroyedTexture,
         ] = await Promise.all([
-            Assets.load('/assets/png/default/ships/ship_1.png'),
-            Assets.load('/assets/png/default/ships/ship_7.png'),
-            Assets.load('/assets/png/default/ships/ship_13.png'),
-            Assets.load('/assets/png/default/ships/ship_19.png'),
+            Assets.load(
+                '/assets/png/default/ships/ship_1.png'
+            ),
+
+            Assets.load(
+                '/assets/png/default/ships/ship_7.png'
+            ),
+
+            Assets.load(
+                '/assets/png/default/ships/ship_13.png'
+            ),
+
+            Assets.load(
+                '/assets/png/default/ships/ship_19.png'
+            ),
         ])
 
-        this.normalTexture = normalTexture
-        this.damagedTexture = damagedTexture
-        this.criticalTexture = criticalTexture
-        this.destroyedTexture = destroyedTexture
+        this.normalTexture =
+            normalTexture
 
-        this.sprite = new Sprite(this.normalTexture)
+        this.damagedTexture =
+            damagedTexture
+
+        this.criticalTexture =
+            criticalTexture
+
+        this.destroyedTexture =
+            destroyedTexture
+
+        this.sprite =
+            new Sprite(
+                this.normalTexture
+            )
 
         this.sprite.anchor.set(0.5)
-        this.sprite.position.set(640, 360)
+
+        this.sprite.position.set(
+            640,
+            360
+        )
+
         this.sprite.scale.set(0.65)
 
-        window.addEventListener('keydown', this.handleKeyDown)
-        window.addEventListener('keyup', this.handleKeyUp)
+        window.addEventListener(
+            'keydown',
+            this.handleKeyDown
+        )
+
+        window.addEventListener(
+            'keyup',
+            this.handleKeyUp
+        )
     }
 
-    private handleKeyDown = (event: KeyboardEvent) => {
-        if (!this.inputEnabled || !this.active) return
+    // =========================
+    // TECLADO
+    // =========================
 
-        const key = event.key.toLowerCase()
+    private handleKeyDown = (
+        event: KeyboardEvent
+    ) => {
+        if (
+            !this.inputEnabled ||
+            !this.active
+        ) {
+            return
+        }
+
+        const key =
+            event.key.toLowerCase()
 
         this.keys.add(key)
 
         if (event.repeat) return
 
-        if (event.code === 'Space') {
-            this.requestedAttack = 'front'
+        if (
+            event.code === 'Space'
+        ) {
+            this.requestAttack(
+                'front'
+            )
         }
 
         if (key === 'q') {
-            this.requestedAttack = 'left'
+            this.requestAttack(
+                'left'
+            )
         }
 
         if (key === 'e') {
-            this.requestedAttack = 'right'
+            this.requestAttack(
+                'right'
+            )
         }
     }
 
-    private handleKeyUp = (event: KeyboardEvent) => {
-        this.keys.delete(event.key.toLowerCase())
+    private handleKeyUp = (
+        event: KeyboardEvent
+    ) => {
+        this.keys.delete(
+            event.key.toLowerCase()
+        )
     }
 
-    update(deltaSeconds: number) {
-        if (!this.sprite || !this.active) return
+    // =========================
+    // TOUCH / MOBILE
+    // =========================
 
-        if (this.invulnerabilityTimer > 0) {
-            this.invulnerabilityTimer -= deltaSeconds
+    setMovementControl(
+        control: MovementControl,
+        pressed: boolean
+    ) {
+        if (
+            !this.inputEnabled ||
+            !this.active
+        ) {
+            return
         }
 
-        if (this.frontCooldown > 0) {
-            this.frontCooldown -= deltaSeconds
+        if (pressed) {
+            this.touchControls.add(
+                control
+            )
+        } else {
+            this.touchControls.delete(
+                control
+            )
+        }
+    }
+
+    requestAttack(
+        attack: AttackType
+    ) {
+        if (
+            !this.inputEnabled ||
+            !this.active
+        ) {
+            return
         }
 
-        if (this.sideCooldown > 0) {
-            this.sideCooldown -= deltaSeconds
+        this.requestedAttack =
+            attack
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+
+    update(
+        deltaSeconds: number
+    ) {
+        if (
+            !this.sprite ||
+            !this.active
+        ) {
+            return
         }
+
+        if (
+            this.invulnerabilityTimer >
+            0
+        ) {
+            this.invulnerabilityTimer -=
+                deltaSeconds
+        }
+
+        if (
+            this.frontCooldown > 0
+        ) {
+            this.frontCooldown -=
+                deltaSeconds
+        }
+
+        if (
+            this.sideCooldown > 0
+        ) {
+            this.sideCooldown -=
+                deltaSeconds
+        }
+
+        // =========================
+        // ROTAÇÃO ESQUERDA
+        // =========================
 
         if (
             this.keys.has('a') ||
-            this.keys.has('arrowleft')
+            this.keys.has(
+                'arrowleft'
+            ) ||
+            this.touchControls.has(
+                'left'
+            )
         ) {
             this.sprite.rotation -=
-                this.rotationSpeed * deltaSeconds
+                this.rotationSpeed *
+                deltaSeconds
         }
+
+        // =========================
+        // ROTAÇÃO DIREITA
+        // =========================
 
         if (
             this.keys.has('d') ||
-            this.keys.has('arrowright')
+            this.keys.has(
+                'arrowright'
+            ) ||
+            this.touchControls.has(
+                'right'
+            )
         ) {
             this.sprite.rotation +=
-                this.rotationSpeed * deltaSeconds
+                this.rotationSpeed *
+                deltaSeconds
         }
 
         let direction = 0
 
+        // =========================
+        // FRENTE
+        // =========================
+
         if (
             this.keys.has('w') ||
-            this.keys.has('arrowup')
+            this.keys.has(
+                'arrowup'
+            ) ||
+            this.touchControls.has(
+                'forward'
+            )
         ) {
             direction = 1
         }
 
+        // =========================
+        // RÉ
+        // =========================
+
         if (
             this.keys.has('s') ||
-            this.keys.has('arrowdown')
+            this.keys.has(
+                'arrowdown'
+            ) ||
+            this.touchControls.has(
+                'backward'
+            )
         ) {
             direction = -0.6
         }
 
         if (direction !== 0) {
             this.sprite.x +=
-                -Math.sin(this.sprite.rotation) *
+                -Math.sin(
+                    this.sprite.rotation
+                ) *
                 this.speed *
                 direction *
                 deltaSeconds
 
             this.sprite.y +=
-                Math.cos(this.sprite.rotation) *
+                Math.cos(
+                    this.sprite.rotation
+                ) *
                 this.speed *
                 direction *
                 deltaSeconds
         }
 
-        this.sprite.x = Math.max(
-            60,
-            Math.min(1220, this.sprite.x)
-        )
+        // =========================
+        // LIMITES DA ARENA
+        // =========================
 
-        this.sprite.y = Math.max(
-            60,
-            Math.min(660, this.sprite.y)
-        )
+        this.sprite.x =
+            Math.max(
+                60,
+                Math.min(
+                    1220,
+                    this.sprite.x
+                )
+            )
+
+        this.sprite.y =
+            Math.max(
+                60,
+                Math.min(
+                    660,
+                    this.sprite.y
+                )
+            )
     }
+
+    // =========================
+    // VIDA
+    // =========================
 
     takeDamage() {
         if (
             !this.active ||
-            this.invulnerabilityTimer > 0
+            this.invulnerabilityTimer >
+            0
         ) {
             return false
         }
 
         this.hp -= 1
-        this.invulnerabilityTimer = 1
+
+        this.invulnerabilityTimer =
+            1
 
         if (this.hp === 2) {
             this.sprite.texture =
@@ -184,7 +376,10 @@ export class PlayerShip {
             this.active = false
         }
 
-        console.log('Player HP:', this.hp)
+        console.log(
+            'Player HP:',
+            this.hp
+        )
 
         return true
     }
@@ -193,16 +388,32 @@ export class PlayerShip {
         return this.hp
     }
 
-    setInputEnabled(enabled: boolean) {
-        this.inputEnabled = enabled
+    // =========================
+    // INPUT
+    // =========================
+
+    setInputEnabled(
+        enabled: boolean
+    ) {
+        this.inputEnabled =
+            enabled
 
         if (!enabled) {
             this.keys.clear()
-            this.requestedAttack = null
+
+            this.touchControls.clear()
+
+            this.requestedAttack =
+                null
         }
     }
 
-    consumeAttackRequest(): AttackType | null {
+    // =========================
+    // ATAQUES
+    // =========================
+
+    consumeAttackRequest():
+        AttackType | null {
         if (
             !this.active ||
             !this.inputEnabled ||
@@ -211,12 +422,16 @@ export class PlayerShip {
             return null
         }
 
-        const attack = this.requestedAttack
+        const attack =
+            this.requestedAttack
 
-        this.requestedAttack = null
+        this.requestedAttack =
+            null
 
         if (attack === 'front') {
-            if (this.frontCooldown > 0) {
+            if (
+                this.frontCooldown > 0
+            ) {
                 return null
             }
 
@@ -226,7 +441,9 @@ export class PlayerShip {
             return 'front'
         }
 
-        if (this.sideCooldown > 0) {
+        if (
+            this.sideCooldown > 0
+        ) {
             return null
         }
 
@@ -235,6 +452,10 @@ export class PlayerShip {
 
         return attack
     }
+
+    // =========================
+    // CLEANUP
+    // =========================
 
     destroy() {
         window.removeEventListener(
