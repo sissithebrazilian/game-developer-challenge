@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import {
   useMutation,
   useQuery,
@@ -22,6 +23,7 @@ import type {
 
 type Screen =
   | 'menu'
+  | 'levels'
   | 'game'
   | 'results'
   | 'options'
@@ -31,13 +33,24 @@ type Screen =
 const SETTINGS_KEY =
   'jungle-naval-settings'
 
-// =========================
-// SETTINGS
-// =========================
+const LEVELS = [
+  { level: 1, title: 'Calm Waters', description: 'Few enemies. Mostly Chasers.', maxEnemies: 3, shooterPercent: 15 },
+  { level: 2, title: 'First Contact', description: 'More Chasers enter the arena.', maxEnemies: 4, shooterPercent: 20 },
+  { level: 3, title: 'Crossfire', description: 'Shooters begin appearing more often.', maxEnemies: 4, shooterPercent: 30 },
+  { level: 4, title: 'Narrow Passage', description: 'More obstacles and a mixed fleet.', maxEnemies: 5, shooterPercent: 35 },
+  { level: 5, title: 'Gun Line', description: 'Balanced Chasers and Shooters.', maxEnemies: 6, shooterPercent: 45 },
+  { level: 6, title: 'Hunter Fleet', description: 'A larger fleet keeps constant pressure.', maxEnemies: 6, shooterPercent: 40 },
+  { level: 7, title: 'Cannon Storm', description: 'Shooters become the main threat.', maxEnemies: 7, shooterPercent: 55 },
+  { level: 8, title: 'Island Maze', description: 'Dense arena with many enemies.', maxEnemies: 8, shooterPercent: 50 },
+  { level: 9, title: 'Pirate Armada', description: 'Large mixed fleet and little breathing room.', maxEnemies: 9, shooterPercent: 60 },
+  { level: 10, title: 'Final Broadside', description: 'Maximum pressure. Shooters dominate.', maxEnemies: 10, shooterPercent: 65 },
+]
 
 function loadSettings(): GameSettings {
   const saved =
-    localStorage.getItem(SETTINGS_KEY)
+    localStorage.getItem(
+      SETTINGS_KEY
+    )
 
   if (!saved) {
     return {
@@ -56,10 +69,6 @@ function loadSettings(): GameSettings {
   }
 }
 
-// =========================
-// APP
-// =========================
-
 function App() {
   const [screen, setScreen] =
     useState<Screen>('menu')
@@ -68,6 +77,12 @@ function App() {
     useState<GameSettings>(
       loadSettings
     )
+
+  const [
+    selectedLevel,
+    setSelectedLevel,
+  ] =
+    useState(1)
 
   const [
     lastResult,
@@ -80,39 +95,27 @@ function App() {
   const queryClient =
     useQueryClient()
 
-  // =========================
-  // MATCH HISTORY QUERY
-  // =========================
-
   const {
     data: history = [],
     isLoading:
-    historyLoading,
+      historyLoading,
     isError:
-    historyError,
+      historyError,
   } = useQuery({
     queryKey: ['matches'],
     queryFn: getMatches,
   })
 
-  // =========================
-  // RANKING QUERY
-  // =========================
-
   const {
     data: ranking = [],
     isLoading:
-    rankingLoading,
+      rankingLoading,
     isError:
-    rankingError,
+      rankingError,
   } = useQuery({
     queryKey: ['ranking'],
     queryFn: getRanking,
   })
-
-  // =========================
-  // SAVE MATCH MUTATION
-  // =========================
 
   const saveMatchMutation =
     useMutation({
@@ -121,25 +124,19 @@ function App() {
       onSuccess: async () => {
         await Promise.all([
           queryClient.invalidateQueries({
-            queryKey: [
-              'matches',
-            ],
+            queryKey: ['matches'],
           }),
-
           queryClient.invalidateQueries({
-            queryKey: [
-              'ranking',
-            ],
+            queryKey: ['ranking'],
           }),
         ])
       },
     })
 
-  // =========================
-  // ACTIONS
-  // =========================
-
-  const startGame = () => {
+  const startGame = (
+    level = selectedLevel
+  ) => {
+    setSelectedLevel(level)
     setScreen('game')
   }
 
@@ -147,30 +144,25 @@ function App() {
     result: MatchResult
   ) => {
     setLastResult(result)
-
-    saveMatchMutation.mutate(
-      result
-    )
-
+    saveMatchMutation.mutate(result)
     setScreen('results')
   }
 
   const saveSettings = (
-    newSettings: GameSettings
+    newSettings:
+      GameSettings
   ) => {
     setSettings(newSettings)
 
     localStorage.setItem(
       SETTINGS_KEY,
-      JSON.stringify(newSettings)
+      JSON.stringify(
+        newSettings
+      )
     )
 
     setScreen('menu')
   }
-
-  // =========================
-  // GAME
-  // =========================
 
   if (screen === 'game') {
     return (
@@ -182,23 +174,34 @@ function App() {
           duration={
             settings.duration
           }
+          level={
+            selectedLevel
+          }
           onGameOver={
             handleGameOver
+          }
+          onMainMenu={() =>
+            setScreen('menu')
           }
         />
       </main>
     )
   }
 
-  // =========================
-  // OPTIONS
-  // =========================
-
-  if (screen === 'options') {
+  if (screen === 'levels') {
     return (
-      <OptionsScreen
-        settings={settings}
-        onSave={saveSettings}
+      <LevelSelectScreen
+        selectedLevel={
+          selectedLevel
+        }
+        onSelect={
+          setSelectedLevel
+        }
+        onPlay={() =>
+          startGame(
+            selectedLevel
+          )
+        }
         onBack={() =>
           setScreen('menu')
         }
@@ -206,9 +209,19 @@ function App() {
     )
   }
 
-  // =========================
-  // RANKING
-  // =========================
+  if (screen === 'options') {
+    return (
+      <OptionsScreen
+        settings={settings}
+        onSave={
+          saveSettings
+        }
+        onBack={() =>
+          setScreen('menu')
+        }
+      />
+    )
+  }
 
   if (screen === 'ranking') {
     return (
@@ -223,13 +236,15 @@ function App() {
         onBack={() =>
           setScreen('menu')
         }
+        onRanking={() =>
+          setScreen('ranking')
+        }
+        onHistory={() =>
+          setScreen('history')
+        }
       />
     )
   }
-
-  // =========================
-  // HISTORY
-  // =========================
 
   if (screen === 'history') {
     return (
@@ -244,13 +259,15 @@ function App() {
         onBack={() =>
           setScreen('menu')
         }
+        onRanking={() =>
+          setScreen('ranking')
+        }
+        onHistory={() =>
+          setScreen('history')
+        }
       />
     )
   }
-
-  // =========================
-  // RESULTS
-  // =========================
 
   if (
     screen === 'results' &&
@@ -258,15 +275,22 @@ function App() {
   ) {
     return (
       <ResultsScreen
-        result={lastResult}
+        result={
+          lastResult
+        }
+        level={
+          selectedLevel
+        }
         isSaving={
           saveMatchMutation.isPending
         }
         saveError={
           saveMatchMutation.isError
         }
-        onPlayAgain={
-          startGame
+        onPlayAgain={() =>
+          startGame(
+            selectedLevel
+          )
         }
         onMenu={() =>
           setScreen('menu')
@@ -275,16 +299,14 @@ function App() {
     )
   }
 
-  // =========================
-  // MENU
-  // =========================
-
   return (
     <MenuScreen
       playerName={
         settings.playerName
       }
-      onPlay={startGame}
+      onPlay={() =>
+        setScreen('levels')
+      }
       onOptions={() =>
         setScreen('options')
       }
@@ -297,10 +319,6 @@ function App() {
     />
   )
 }
-
-// =========================
-// MENU
-// =========================
 
 type MenuProps = {
   playerName: string
@@ -318,57 +336,231 @@ function MenuScreen({
   onHistory,
 }: MenuProps) {
   return (
-    <main className="screen">
-      <section className="panel menu-panel">
-        <p className="eyebrow">
-          JUNGLE GAMING
-        </p>
+    <main className="pirate-screen">
+      <div className="pirate-menu-shell">
+        <img
+          src="/assets/png/default/ui/menu/title_pirate_battle.png"
+          alt="Pirate Battle"
+          className="pirate-title"
+        />
 
-        <h1>
-          Naval Battle
-        </h1>
+        <section className="pirate-panel pirate-menu-panel">
+          <p className="pirate-tagline">
+            SET SAIL. TAKE COMMAND.
+          </p>
 
-        <p className="subtitle">
-          Captain {playerName}
-        </p>
+          <p className="pirate-captain">
+            Captain {playerName}
+          </p>
 
-        <button
-          className="primary-button"
-          onClick={onPlay}
-        >
-          Play
-        </button>
+          <button
+            className="pirate-button pirate-button-primary"
+            onClick={onPlay}
+          >
+            PLAY
+          </button>
 
-        <button
-          onClick={onRanking}
-        >
-          Ranking
-        </button>
+          <button
+            className="pirate-button pirate-button-primary"
+            onClick={onOptions}
+          >
+            OPTIONS
+          </button>
 
-        <button
-          onClick={onHistory}
-        >
-          Match History
-        </button>
+          <p className="pirate-hint">
+            Navigate the islands.
+            Survive the battle.
+          </p>
 
-        <button
-          onClick={onOptions}
-        >
-          Options
-        </button>
-      </section>
+          <div className="pirate-menu-footer">
+            <button
+              className="pirate-button pirate-button-ranking"
+              onClick={onRanking}
+            >
+              RANKING
+            </button>
+
+            <button
+              className="pirate-button pirate-button-history"
+              onClick={onHistory}
+            >
+              MATCH HISTORY
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
     </main>
   )
 }
 
-// =========================
-// OPTIONS
-// =========================
+type LevelSelectProps = {
+  selectedLevel: number
+  onSelect: (
+    level: number
+  ) => void
+  onPlay: () => void
+  onBack: () => void
+}
+
+function LevelSelectScreen({
+  selectedLevel,
+  onSelect,
+  onPlay,
+  onBack,
+}: LevelSelectProps) {
+  const current =
+    LEVELS.find(
+      (item) =>
+        item.level ===
+        selectedLevel
+    ) ?? LEVELS[0]
+
+  return (
+    <main className="pirate-screen">
+      <section
+        className="pirate-wide-panel"
+        style={{
+          maxWidth: 1080,
+        }}
+      >
+        <h1 className="pirate-log-title">
+          CHOOSE YOUR BATTLE
+        </h1>
+
+        <p className="pirate-log-subtitle">
+          Select a level from 1 to 10
+        </p>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(5, minmax(110px, 1fr))',
+            gap: 12,
+            marginBottom: 18,
+          }}
+        >
+          {LEVELS.map(
+            (item) => (
+              <button
+                key={
+                  item.level
+                }
+                className="pirate-button pirate-button-secondary"
+                style={{
+                  width: '100%',
+                  height: 58,
+                  filter:
+                    item.level ===
+                    selectedLevel
+                      ? 'brightness(1.25)'
+                      : undefined,
+                }}
+                onClick={() =>
+                  onSelect(
+                    item.level
+                  )
+                }
+              >
+                LEVEL {item.level}
+              </button>
+            )
+          )}
+        </div>
+
+        <div
+          style={{
+            margin:
+              '0 auto 18px',
+            width: 'min(620px, 100%)',
+            padding:
+              '18px 20px',
+            borderRadius: 12,
+            background:
+              'rgba(4, 25, 38, 0.72)',
+            textAlign: 'center',
+          }}
+        >
+          <h2
+            style={{
+              margin:
+                '0 0 8px',
+              color:
+                '#ffd76f',
+            }}
+          >
+            Level {current.level} · {current.title}
+          </h2>
+
+          <p
+            style={{
+              margin:
+                '0 0 8px',
+            }}
+          >
+            {current.description}
+          </p>
+
+          <p
+            style={{
+              margin: 0,
+              opacity: 0.8,
+            }}
+          >
+            Up to {current.maxEnemies} enemies · approximately {current.shooterPercent}% Shooters
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent:
+              'center',
+            gap: 16,
+            flexWrap: 'wrap',
+          }}
+        >
+          <button
+            className="pirate-button pirate-button-primary"
+            onClick={
+              onPlay
+            }
+          >
+            START LEVEL {selectedLevel}
+          </button>
+
+          <button
+            className="pirate-button pirate-button-secondary"
+            onClick={
+              onBack
+            }
+          >
+            MAIN MENU
+          </button>
+        </div>
+      </section>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
+    </main>
+  )
+}
 
 type OptionsProps = {
-  settings: GameSettings
+  settings:
+    GameSettings
   onSave: (
-    settings: GameSettings
+    settings:
+      GameSettings
   ) => void
   onBack: () => void
 }
@@ -392,418 +584,528 @@ function OptionsScreen({
     settings.duration
   )
 
+  const durationOptions =
+    [
+      60,
+      90,
+      120,
+      180,
+    ]
+
+  const changeDuration = (
+    direction:
+      -1 | 1
+  ) => {
+    const index =
+      durationOptions.indexOf(
+        duration
+      )
+
+    const nextIndex =
+      Math.max(
+        0,
+        Math.min(
+          durationOptions.length -
+            1,
+          index + direction
+        )
+      )
+
+    setDuration(
+      durationOptions[
+        nextIndex
+      ]
+    )
+  }
+
   const handleSave = () => {
     const cleanName =
       playerName.trim() ||
       'Player'
 
     onSave({
-      playerName: cleanName,
+      playerName:
+        cleanName,
       duration,
     })
   }
 
   return (
-    <main className="screen">
-      <section className="panel">
-        <h1>Options</h1>
+    <main className="pirate-screen">
+      <section className="pirate-panel pirate-options-panel">
+        <h1 className="pirate-heading">
+          OPTIONS
+        </h1>
 
-        <label>
-          Player name
+        <label className="pirate-field">
+          Captain name
 
           <input
-            value={playerName}
+            value={
+              playerName
+            }
             maxLength={20}
-            onChange={(event) =>
+            onChange={(
+              event
+            ) =>
               setPlayerName(
-                event.target.value
+                event.target
+                  .value
               )
             }
           />
         </label>
 
-        <label>
-          Match duration
+        <div className="pirate-option-control">
+          <span>
+            Game session
+            time
+          </span>
 
-          <select
-            value={duration}
-            onChange={(event) =>
-              setDuration(
-                Number(
-                  event.target.value
+          <div className="pirate-stepper">
+            <button
+              className="round-control"
+              onClick={() =>
+                changeDuration(
+                  -1
                 )
-              )
-            }
-          >
-            <option value={60}>
-              60 seconds
-            </option>
+              }
+              aria-label="Decrease duration"
+            >
+              <img
+                src="/assets/png/default/ui/controls/icon_minus.png"
+                alt=""
+              />
+            </button>
 
-            <option value={90}>
-              90 seconds
-            </option>
+            <strong>
+              {duration} s
+            </strong>
 
-            <option value={120}>
-              120 seconds
-            </option>
-
-            <option value={180}>
-              180 seconds
-            </option>
-          </select>
-        </label>
+            <button
+              className="round-control"
+              onClick={() =>
+                changeDuration(
+                  1
+                )
+              }
+              aria-label="Increase duration"
+            >
+              <img
+                src="/assets/png/default/ui/controls/icon_plus.png"
+                alt=""
+              />
+            </button>
+          </div>
+        </div>
 
         <button
-          className="primary-button"
-          onClick={handleSave}
+          className="pirate-button pirate-button-primary"
+          onClick={
+            handleSave
+          }
         >
-          Save
+          SAVE
         </button>
 
-        <button onClick={onBack}>
-          Back
+        <button
+          className="pirate-button pirate-button-secondary"
+          onClick={
+            onBack
+          }
+        >
+          MAIN MENU
         </button>
       </section>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
     </main>
   )
 }
 
-// =========================
-// RESULTS
-// =========================
-
 type ResultsProps = {
-  result: MatchResult
+  result:
+    MatchResult
+  level: number
   isSaving: boolean
   saveError: boolean
-  onPlayAgain: () => void
+  onPlayAgain:
+    () => void
   onMenu: () => void
 }
 
 function ResultsScreen({
   result,
+  level,
   isSaving,
   saveError,
   onPlayAgain,
   onMenu,
 }: ResultsProps) {
+  const minutes =
+    Math.floor(
+      result.duration /
+        60
+    )
+
+  const seconds =
+    result.duration %
+    60
+
+  const formattedTime =
+    `${String(
+      minutes
+    ).padStart(
+      2,
+      '0'
+    )}:${String(
+      seconds
+    ).padStart(
+      2,
+      '0'
+    )}`
+
   return (
-    <main className="screen">
-      <section className="panel">
-        <p className="eyebrow">
-          MATCH FINISHED
+    <main className="pirate-screen">
+      <section className="pirate-panel pirate-result-panel">
+        <h1 className="pirate-heading">
+          BATTLE COMPLETE
+        </h1>
+
+        <p className="pirate-hint">
+          LEVEL {level}
         </p>
 
-        <h1>Results</h1>
-
-        <div className="result-score">
-          {result.score}
+        <div className="pirate-result-score">
+          {
+            result.score
+          }
         </div>
 
-        <p>
-          Score
+        <p className="pirate-result-info">
+          POINTS ·{' '}
+          {
+            formattedTime
+          }{' '}
+          ·{' '}
+          {result.endedBy ===
+          'Time'
+            ? 'TIME UP'
+            : 'DEFEATED'}
         </p>
 
-        <div className="result-grid">
-          <div>
-            <strong>
-              Player
-            </strong>
+        <button
+          className="pirate-button pirate-button-primary"
+          onClick={
+            onPlayAgain
+          }
+        >
+          PLAY AGAIN
+        </button>
 
-            <span>
-              {result.playerName}
-            </span>
-          </div>
-
-          <div>
-            <strong>
-              Result
-            </strong>
-
-            <span>
-              {result.endedBy ===
-                'Time'
-                ? 'Time Up'
-                : 'Ship Destroyed'}
-            </span>
-          </div>
-
-          <div>
-            <strong>
-              Time
-            </strong>
-
-            <span>
-              {result.duration}s
-            </span>
-          </div>
-        </div>
+        <button
+          className="pirate-button pirate-button-primary"
+          onClick={
+            onMenu
+          }
+        >
+          MAIN MENU
+        </button>
 
         {isSaving && (
-          <p>
+          <p className="pirate-status">
             Saving match...
           </p>
         )}
 
         {saveError && (
-          <p>
+          <p className="pirate-status pirate-error">
             Failed to save match.
           </p>
         )}
-
-        <button
-          className="primary-button"
-          onClick={onPlayAgain}
-        >
-          Play Again
-        </button>
-
-        <button onClick={onMenu}>
-          Main Menu
-        </button>
       </section>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
     </main>
   )
 }
 
-// =========================
-// DATA SCREEN TYPES
-// =========================
-
 type DataScreenProps = {
-  history: MatchResult[]
+  history:
+    MatchResult[]
   isLoading: boolean
   isError: boolean
   onBack: () => void
+  onRanking:
+    () => void
+  onHistory:
+    () => void
 }
 
-// =========================
-// RANKING
-// =========================
+function CaptainLogHeader({
+  active,
+  onRanking,
+  onHistory,
+}: {
+  active:
+    | 'ranking'
+    | 'history'
+  onRanking:
+    () => void
+  onHistory:
+    () => void
+}) {
+  return (
+    <>
+      <h1 className="pirate-log-title">
+        CAPTAIN'S LOG
+      </h1>
+
+      <div className="pirate-log-tabs">
+        <button
+          className={`pirate-button pirate-button-ranking ${
+            active ===
+            'ranking'
+              ? 'active'
+              : ''
+          }`}
+          onClick={
+            onRanking
+          }
+        >
+          RANKING
+        </button>
+
+        <button
+          className={`pirate-button pirate-button-history ${
+            active ===
+            'history'
+              ? 'active'
+              : ''
+          }`}
+          onClick={
+            onHistory
+          }
+        >
+          MATCH HISTORY
+        </button>
+      </div>
+    </>
+  )
+}
 
 function RankingScreen({
   history,
   isLoading,
   isError,
   onBack,
+  onRanking,
+  onHistory,
 }: DataScreenProps) {
-  if (isLoading) {
-    return (
-      <main className="screen">
-        <section className="panel">
-          <h1>
-            Ranking
-          </h1>
+  return (
+    <main className="pirate-screen">
+      <section className="pirate-wide-panel">
+        <CaptainLogHeader
+          active="ranking"
+          onRanking={onRanking}
+          onHistory={onHistory}
+        />
 
-          <p>
+        <p className="pirate-log-subtitle">
+          BEST CAPTAINS OF THE FLEET
+        </p>
+
+        {isLoading ? (
+          <p className="pirate-status">
             Loading...
           </p>
-        </section>
-      </main>
-    )
-  }
-
-  if (isError) {
-    return (
-      <main className="screen">
-        <section className="panel">
-          <h1>
-            Ranking
-          </h1>
-
-          <p>
+        ) : isError ? (
+          <p className="pirate-status pirate-error">
             Failed to load ranking.
           </p>
-
-          <button
-            onClick={onBack}
-          >
-            Back
-          </button>
-        </section>
-      </main>
-    )
-  }
-
-  return (
-    <main className="screen">
-      <section className="panel wide-panel">
-        <h1>
-          Ranking
-        </h1>
-
-        {history.length === 0 ? (
-          <p>
+        ) : history.length ===
+          0 ? (
+          <p className="pirate-status">
             No matches yet.
           </p>
         ) : (
-          <div className="table">
-            <div className="table-row table-header">
-              <span>#</span>
-              <span>Player</span>
-              <span>Score</span>
+          <div className="pirate-table">
+            <div className="pirate-table-row pirate-table-header">
+              <span>RANK</span>
+              <span>CAPTAIN</span>
+              <span>POINTS</span>
+              <span>PLAYED</span>
             </div>
 
-            {history.map(
-              (match, index) => (
-                <div
-                  className="table-row"
-                  key={
-                    match.finishedAt +
-                    index
-                  }
-                >
-                  <span>
-                    {index + 1}
-                  </span>
-
-                  <span>
-                    {
-                      match.playerName
+            {history
+              .slice(0, 10)
+              .map(
+                (
+                  match,
+                  index
+                ) => (
+                  <div
+                    className="pirate-table-row"
+                    key={
+                      match.finishedAt +
+                      index
                     }
-                  </span>
+                  >
+                    <span className="rank-number">
+                      {String(
+                        index +
+                          1
+                      ).padStart(
+                        2,
+                        '0'
+                      )}
+                    </span>
 
-                  <span>
-                    {match.score}
-                  </span>
-                </div>
-              )
-            )}
+                    <strong>
+                      {match.playerName}
+                    </strong>
+
+                    <strong className="pirate-points">
+                      {match.score}
+                    </strong>
+
+                    <span>
+                      {new Date(
+                        match.finishedAt
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                )
+              )}
           </div>
         )}
 
         <button
+          className="pirate-button pirate-button-primary log-menu-button"
           onClick={onBack}
         >
-          Back
+          MAIN MENU
         </button>
       </section>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
     </main>
   )
 }
-
-// =========================
-// MATCH HISTORY
-// =========================
 
 function HistoryScreen({
   history,
   isLoading,
   isError,
   onBack,
+  onRanking,
+  onHistory,
 }: DataScreenProps) {
-  if (isLoading) {
-    return (
-      <main className="screen">
-        <section className="panel">
-          <h1>
-            Match History
-          </h1>
+  return (
+    <main className="pirate-screen">
+      <section className="pirate-wide-panel">
+        <CaptainLogHeader
+          active="history"
+          onRanking={onRanking}
+          onHistory={onHistory}
+        />
 
-          <p>
+        <p className="pirate-log-subtitle">
+          YOUR RECENT BATTLES
+        </p>
+
+        {isLoading ? (
+          <p className="pirate-status">
             Loading...
           </p>
-        </section>
-      </main>
-    )
-  }
-
-  if (isError) {
-    return (
-      <main className="screen">
-        <section className="panel">
-          <h1>
-            Match History
-          </h1>
-
-          <p>
+        ) : isError ? (
+          <p className="pirate-status pirate-error">
             Failed to load history.
           </p>
-
-          <button
-            onClick={onBack}
-          >
-            Back
-          </button>
-        </section>
-      </main>
-    )
-  }
-
-  return (
-    <main className="screen">
-      <section className="panel wide-panel">
-        <h1>
-          Match History
-        </h1>
-
-        {history.length === 0 ? (
-          <p>
+        ) : history.length ===
+          0 ? (
+          <p className="pirate-status">
             No matches yet.
           </p>
         ) : (
-          <div className="table">
-            <div className="table-row history-row table-header">
-              <span>
-                Player
-              </span>
-
-              <span>
-                Score
-              </span>
-
-              <span>
-                Result
-              </span>
-
-              <span>
-                Date
-              </span>
+          <div className="pirate-table">
+            <div className="pirate-table-row history pirate-table-header">
+              <span>CAPTAIN</span>
+              <span>POINTS</span>
+              <span>DURATION</span>
+              <span>RESULT</span>
             </div>
 
-            {history.map(
-              (match, index) => (
-                <div
-                  className="table-row history-row"
-                  key={
-                    match.finishedAt +
-                    index
-                  }
-                >
-                  <span>
-                    {
-                      match.playerName
+            {history
+              .slice(0, 10)
+              .map(
+                (
+                  match,
+                  index
+                ) => (
+                  <div
+                    className="pirate-table-row history"
+                    key={
+                      match.finishedAt +
+                      index
                     }
-                  </span>
+                  >
+                    <strong>
+                      {match.playerName}
+                    </strong>
 
-                  <span>
-                    {match.score}
-                  </span>
+                    <strong className="pirate-points">
+                      {match.score}
+                    </strong>
 
-                  <span>
-                    {match.endedBy ===
+                    <span>
+                      {match.duration}s
+                    </span>
+
+                    <span
+                      className={
+                        match.endedBy ===
+                        'Time'
+                          ? 'result-success'
+                          : 'result-defeat'
+                      }
+                    >
+                      {match.endedBy ===
                       'Time'
-                      ? 'Time'
-                      : 'Destroyed'}
-                  </span>
-
-                  <span>
-                    {new Date(
-                      match.finishedAt
-                    ).toLocaleString()}
-                  </span>
-                </div>
-              )
-            )}
+                        ? 'TIME UP'
+                        : 'DEFEATED'}
+                    </span>
+                  </div>
+                )
+              )}
           </div>
         )}
 
         <button
+          className="pirate-button pirate-button-primary log-menu-button"
           onClick={onBack}
         >
-          Back
+          MAIN MENU
         </button>
       </section>
+
+      <img
+        className="jungle-logo"
+        src="/assets/logo_jungle_gaming.svg"
+        alt="Jungle Gaming"
+      />
     </main>
   )
 }

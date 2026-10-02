@@ -1,11 +1,16 @@
-import { Assets, Sprite, Texture } from 'pixi.js'
+import { Sprite, type Texture } from 'pixi.js'
+import {
+    loadShipTextures,
+    type ShipVariant,
+} from './shipTextures'
 
 export class ShooterShip {
     public sprite!: Sprite
     public active = true
 
     private speed = 85
-    private hp = 3
+    private readonly maxHp = 3
+    private hp = this.maxHp
 
     private shootCooldown = 1
     private readonly shootCooldownTime = 2
@@ -17,29 +22,31 @@ export class ShooterShip {
     private criticalTexture!: Texture
     private destroyedTexture!: Texture
 
-    async init(x: number, y: number) {
-        const [
-            normalTexture,
-            damagedTexture,
-            criticalTexture,
-            destroyedTexture,
-        ] = await Promise.all([
-            Assets.load('/assets/png/default/ships/ship_3.png'),
-            Assets.load('/assets/png/default/ships/ship_9.png'),
-            Assets.load('/assets/png/default/ships/ship_15.png'),
-            Assets.load('/assets/png/default/ships/ship_21.png'),
-        ])
+    async init(
+        x: number,
+        y: number,
+        variant: ShipVariant = 3
+    ) {
+        const textures = await loadShipTextures(variant)
 
-        this.normalTexture = normalTexture
-        this.damagedTexture = damagedTexture
-        this.criticalTexture = criticalTexture
-        this.destroyedTexture = destroyedTexture
+        this.normalTexture = textures.normal
+        this.damagedTexture = textures.damaged
+        this.criticalTexture = textures.critical
+        this.destroyedTexture = textures.destroyed
 
         this.sprite = new Sprite(this.normalTexture)
 
         this.sprite.anchor.set(0.5)
         this.sprite.position.set(x, y)
         this.sprite.scale.set(0.55)
+    }
+
+    getHp() {
+        return this.hp
+    }
+
+    getMaxHp() {
+        return this.maxHp
     }
 
     update(

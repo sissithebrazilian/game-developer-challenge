@@ -1,4 +1,8 @@
-import { Assets, Sprite, Texture } from 'pixi.js'
+import { Sprite, type Texture } from 'pixi.js'
+import {
+  loadShipTextures,
+  type ShipVariant,
+} from './shipTextures'
 
 export class EnemyShip {
   public sprite!: Sprite
@@ -6,31 +10,25 @@ export class EnemyShip {
 
   private speed = 110
 
-  private hp = 3
+  private readonly maxHp = 3
+  private hp = this.maxHp
 
   private normalTexture!: Texture
   private damagedTexture!: Texture
   private criticalTexture!: Texture
   private destroyedTexture!: Texture
 
-  async init(x: number, y: number) {
-    // Carrega os diferentes estados visuais do navio.
-    const [
-      normalTexture,
-      damagedTexture,
-      criticalTexture,
-      destroyedTexture,
-    ] = await Promise.all([
-      Assets.load('/assets/png/default/ships/ship_2.png'),
-      Assets.load('/assets/png/default/ships/ship_8.png'),
-      Assets.load('/assets/png/default/ships/ship_14.png'),
-      Assets.load('/assets/png/default/ships/ship_20.png'),
-    ])
+  async init(
+    x: number,
+    y: number,
+    variant: ShipVariant = 2
+  ) {
+    const textures = await loadShipTextures(variant)
 
-    this.normalTexture = normalTexture
-    this.damagedTexture = damagedTexture
-    this.criticalTexture = criticalTexture
-    this.destroyedTexture = destroyedTexture
+    this.normalTexture = textures.normal
+    this.damagedTexture = textures.damaged
+    this.criticalTexture = textures.critical
+    this.destroyedTexture = textures.destroyed
 
     this.sprite = new Sprite(this.normalTexture)
 
@@ -80,8 +78,6 @@ export class EnemyShip {
 
     this.hp -= 1
 
-    console.log('Enemy HP:', this.hp)
-
     if (this.hp === 2) {
       this.sprite.texture =
         this.damagedTexture
@@ -98,6 +94,14 @@ export class EnemyShip {
 
       this.active = false
     }
+  }
+
+  getHp() {
+    return this.hp
+  }
+
+  getMaxHp() {
+    return this.maxHp
   }
 
   destroy() {
