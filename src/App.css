@@ -29,9 +29,7 @@ select {
   height: 100vh;
 }
 
-/* =========================================================
-   GAME SHELL
-   ========================================================= */
+/* Game shell */
 
 .game-screen {
   width: 100vw;
@@ -73,9 +71,7 @@ select {
   max-height: 100%;
 }
 
-/* =========================================================
-   PIRATE SCREENS
-   ========================================================= */
+/* Menu screens */
 
 .pirate-screen {
   position: relative;
@@ -285,9 +281,7 @@ select {
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
 }
 
-/* =========================================================
-   OPTIONS
-   ========================================================= */
+/* Options */
 
 .pirate-options-panel {
   justify-content: flex-start;
@@ -358,9 +352,7 @@ select {
   object-fit: contain;
 }
 
-/* =========================================================
-   RESULT
-   ========================================================= */
+/* Result */
 
 .pirate-result-panel {
   justify-content: flex-start;
@@ -397,9 +389,7 @@ select {
   color: #ff9a8e;
 }
 
-/* =========================================================
-   CAPTAIN'S LOG
-   ========================================================= */
+/* Captain's log */
 
 .pirate-wide-panel {
   position: relative;
@@ -497,9 +487,7 @@ select {
   margin: 14px auto 0;
 }
 
-/* =========================================================
-   TOUCH CONTROLS
-   ========================================================= */
+/* Touch controls */
 
 .touch-controls {
   display: none;
@@ -606,9 +594,7 @@ select {
   }
 }
 
-/* =========================================================
-   RESPONSIVE APP SCREENS
-   ========================================================= */
+/* Responsive app screens */
 
 @media (max-width: 700px) {
   .pirate-screen {

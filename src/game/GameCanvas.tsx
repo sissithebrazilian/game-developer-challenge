@@ -163,9 +163,6 @@ export function GameCanvas({
 
 
 
-            // =========================
-            // MAPA / ASSETS OFICIAIS
-            // =========================
 
             const TILE_SIZE = 64
 
@@ -312,9 +309,6 @@ export function GameCanvas({
                 arenaBorder
             )
 
-            // =========================
-            // ILHA SUPERIOR ESQUERDA
-            // =========================
 
             addTileGrid(
                 [
@@ -341,9 +335,6 @@ export function GameCanvas({
                 4
             )
 
-            // =========================
-            // ILHA INFERIOR DIREITA
-            // =========================
 
             addTileGrid(
                 [
@@ -371,10 +362,8 @@ export function GameCanvas({
                 4
             )
 
-            // Decoração de praia removida daqui.
-            // Os tiles 81 e 83 já possuem um quadrado de areia próprio,
-            // então sobrepor esses tiles à ilha criava blocos visíveis.
-            // A decoração naval abaixo usa sprites transparentes separados.
+
+            // Decorative shipwreck props stay separate from island tiles.
 
             const extraIslands: Island[] = []
 
@@ -474,7 +463,7 @@ export function GameCanvas({
                     break
             }
 
-            // Hitboxes simples e invisíveis das ilhas.
+            // Invisible island hitboxes.
             const islands: Island[] = [
                 {
                     x: 346,
@@ -662,11 +651,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // ESTADO DA PARTIDA
 
-            // =========================
 
 
 
@@ -690,9 +676,6 @@ export function GameCanvas({
 
 
 
-            // =========================
-            // AUDIO
-            // =========================
 
             const createAudio = (
                 path: string,
@@ -727,7 +710,7 @@ export function GameCanvas({
                 try {
                     audio.currentTime = 0
                 } catch {
-                    // Ignore early seek errors.
+                    // The browser may reject seeking before metadata is ready.
                 }
 
                 void audio.play().catch(() => { })
@@ -754,14 +737,11 @@ export function GameCanvas({
                     try {
                         audio.currentTime = 0
                     } catch {
-                        // Ignore cleanup seek errors.
+                        // The browser may reject seeking before metadata is ready.
                     }
                 })
             }
 
-            // =========================
-            // HUD OFICIAL
-            // =========================
 
             const [
                 healthFrameTexture,
@@ -930,9 +910,6 @@ export function GameCanvas({
                 levelText
             )
 
-            // =========================
-            // EXPLOSÕES
-            // =========================
 
             type ExplosionEffect = {
                 sprite: Sprite
@@ -982,11 +959,8 @@ export function GameCanvas({
                 playSound(sounds.explosion)
             }
 
-            // =========================
 
-            // JOGADOR
 
-            // =========================
 
 
 
@@ -1027,11 +1001,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // PAUSE
 
-            // =========================
 
 
 
@@ -1169,9 +1140,8 @@ export function GameCanvas({
 
 
 
-            // Faz o botão mobile usar
+            // Mobile pause uses the same state as the keyboard shortcut.
 
-            // exatamente a mesma lógica.
 
             pauseToggleRef.current =
 
@@ -1321,11 +1291,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // GAME OVER
 
-            // =========================
 
 
 
@@ -1441,11 +1408,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // INIMIGOS
 
-            // =========================
 
 
 
@@ -1854,11 +1818,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // PROJÉTEIS
 
-            // =========================
 
 
 
@@ -2036,11 +1997,8 @@ export function GameCanvas({
 
 
 
-            // =========================
 
-            // GAME LOOP
 
-            // =========================
 
 
 
@@ -2070,11 +2028,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // TIMER
 
-                    // =====================
 
 
 
@@ -2120,11 +2075,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // JOGADOR
 
-                    // =====================
 
 
 
@@ -2174,11 +2126,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // SPAWN
 
-                    // =====================
 
 
 
@@ -2224,11 +2173,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // INIMIGOS
 
-                    // =====================
 
 
 
@@ -2372,11 +2318,8 @@ export function GameCanvas({
 
 
 
-                        // ===================
 
-                        // SHOOTER
 
-                        // ===================
 
 
 
@@ -2406,11 +2349,8 @@ export function GameCanvas({
 
 
 
-                        // ===================
 
-                        // CHASER
 
-                        // ===================
 
 
 
@@ -2526,11 +2466,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // ATAQUES DO JOGADOR
 
-                    // =====================
 
 
 
@@ -2658,11 +2595,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // TIROS DO JOGADOR
 
-                    // =====================
 
 
 
@@ -2856,11 +2790,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // TIROS DOS SHOOTERS
 
-                    // =====================
 
 
 
@@ -3094,11 +3025,8 @@ export function GameCanvas({
 
 
 
-                    // =====================
 
-                    // DESPAWN
 
-                    // =====================
 
 
 

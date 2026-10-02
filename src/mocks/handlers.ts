@@ -42,9 +42,6 @@ const processedRequests =
     new Map<string, MatchResult>()
 
 export const handlers = [
-    // =========================
-    // MATCH HISTORY
-    // =========================
 
     http.get(
         '/api/matches',
@@ -57,9 +54,6 @@ export const handlers = [
         }
     ),
 
-    // =========================
-    // RANKING
-    // =========================
 
     http.get(
         '/api/ranking',
@@ -81,9 +75,6 @@ export const handlers = [
         }
     ),
 
-    // =========================
-    // SAVE MATCH
-    // =========================
 
     http.post(
         '/api/matches',
