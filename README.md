@@ -172,41 +172,6 @@ The Playwright suite covers the main application flow:
 - pausing and returning to the menu;
 - checking that the PixiJS canvas renders.
 
-## Project structure
-
-```text
-src/
-├── api/
-│   ├── client.ts
-│   └── matches.ts
-│
-├── game/
-│   ├── EnemyShip.ts
-│   ├── GameCanvas.tsx
-│   ├── PlayerShip.ts
-│   ├── Projectile.ts
-│   ├── ShooterShip.ts
-│   └── shipTextures.ts
-│
-├── mocks/
-│   ├── browser.ts
-│   └── handlers.ts
-│
-├── types/
-│   └── game.ts
-│
-├── App.tsx
-├── App.css
-└── main.tsx
-
-tests/
-└── app.spec.ts
-
-ARCHITECTURE.md
-playwright.config.ts
-vite.config.ts
-```
-
 ## Architecture
 
 The main split is simple:
