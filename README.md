@@ -1,53 +1,22 @@
-# Naval Battle
+# Pirate Battle
 
-A small 2D top-down naval shooter developed with React, TypeScript, PixiJS, TanStack Query, Axios, MSW and Playwright.
+Pirate Battle is a small top-down naval game built with React, TypeScript and PixiJS.
 
-The project was created as a technical challenge focused on gameplay, architecture, responsive UI, mocked API integration and automated tests.
+The player controls a pirate ship, fights enemy boats, avoids islands, uses front and side cannons, and tries to survive through a set of progressively harder levels. The project also includes a mocked API layer for ranking and match history, plus automated tests for the main user flows.
 
----
-
-## Live Demo
-
-Production:
+## Live version
 
 ```text
 https://game-developer-challenge-one.vercel.app
 ```
 
----
+## Repository
 
-## Main Features
+```text
+https://github.com/sissithebrazilian/game-developer-challenge
+```
 
-- 2D top-down naval combat
-- Keyboard controls
-- Touch/mobile controls
-- Front cannon attack
-- Left and right broadside attacks
-- Chaser enemy
-- Shooter enemy
-- Health system
-- Progressive damage sprites
-- Collision system
-- Islands
-- Projectile blocking by islands
-- Score system
-- Match timer
-- Manual pause
-- Automatic pause on focus loss
-- Configurable match duration
-- Ranking
-- Match history
-- Persistent settings
-- Persistent mocked match data
-- API simulation with MSW
-- Idempotent match submission
-- Responsive 16:9 game canvas
-- Mobile landscape support
-- End-to-end tests with Playwright
-
----
-
-## Technologies
+## Stack
 
 - React
 - TypeScript
@@ -57,44 +26,16 @@ https://game-developer-challenge-one.vercel.app
 - Axios
 - Mock Service Worker
 - Playwright
+- Oxlint
 - Vercel
 
----
+## Running locally
 
-## Requirements
-
-Recommended:
-
-```text
-Node.js 20+
-npm
-```
-
----
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/sissithebrazilian/game-developer-challenge.git
-```
-
-Enter the project directory:
-
-```bash
-cd game-developer-challenge
-```
-
-Install dependencies:
+Install the dependencies:
 
 ```bash
 npm install
 ```
-
----
-
-## Running the Project
 
 Start the development server:
 
@@ -102,39 +43,55 @@ Start the development server:
 npm run dev
 ```
 
-The application will normally be available at:
+The project usually opens at:
 
 ```text
 http://localhost:5173
 ```
 
----
+## Useful commands
 
-## Production Build
-
-To create a production build:
+Build the production version:
 
 ```bash
 npm run build
 ```
 
-The generated files will be placed in:
-
-```text
-dist
-```
-
-To preview the production build locally:
+Preview the production build:
 
 ```bash
 npm run preview
 ```
 
----
+Run lint:
 
-## Game Controls
+```bash
+npm run lint
+```
 
-### Keyboard
+Run the Playwright tests:
+
+```bash
+npm run test:e2e
+```
+
+Open Playwright UI mode:
+
+```bash
+npm run test:e2e:ui
+```
+
+If Playwright has not installed Chromium yet:
+
+```bash
+npx playwright install chromium
+```
+
+## How to play
+
+The game is played in a 16:9 arena. The goal is to destroy enemy ships and survive until the match ends.
+
+Keyboard controls:
 
 ```text
 W / Arrow Up       Move forward
@@ -149,167 +106,38 @@ E                  Right broadside
 P                  Pause / Resume
 ```
 
----
+On mobile and touch devices, the game shows on-screen controls. Landscape mode is recommended.
 
-## Touch Controls
+## Gameplay notes
 
-On supported touch devices, the game displays on-screen controls for:
+- There are 10 levels, each with a different map layout.
+- Enemy ships can spawn in different points around the arena.
+- Enemies try to avoid obstacles instead of simply driving through them.
+- Chaser ships move toward the player and explode on contact.
+- Shooter ships try to keep distance and fire cannonballs.
+- Enemy health bars shrink and change color as they take damage.
+- Damaged enemies can show fire effects.
+- Sinking ships use different explosion animations.
+- The player can use both front cannon and broadside attacks.
+- Ranking and match history are saved locally through the mocked API layer.
 
-- Forward
-- Reverse
-- Left rotation
-- Right rotation
-- Front fire
-- Left broadside
-- Right broadside
-- Pause
+## Screens
 
-For mobile devices, landscape orientation is recommended.
-
----
-
-## Gameplay
-
-The player controls a naval ship inside a 2D arena.
-
-The goal is to survive the match and destroy enemy ships.
-
-There are two enemy types:
-
-### Chaser
-
-The Chaser moves directly toward the player.
-
-When it collides with the player:
-
-- The player receives damage
-- The Chaser is destroyed
-- No score is awarded for that enemy
-
-### Shooter
-
-The Shooter attempts to maintain a preferred distance from the player and fires projectiles toward the player's position.
-
----
-
-## Attacks
-
-### Front Cannon
-
-The front cannon fires one projectile in the direction of the ship.
-
-Default control:
-
-```text
-Space
-```
-
-### Broadside
-
-The broadside attack fires three projectiles from one side of the ship.
-
-Controls:
-
-```text
-Q - Left broadside
-E - Right broadside
-```
-
-The front attack and broadside attacks use independent cooldowns.
-
----
-
-## Health System
-
-The player has:
-
-```text
-3 HP
-```
-
-The ship changes sprite depending on its damage state.
-
-The player also receives temporary invulnerability after taking damage to prevent multiple damage events from occurring instantly.
-
-Enemies also have multiple damage states.
-
----
-
-## Scoring
-
-Each enemy destroyed by a player projectile awards:
-
-```text
-1 point
-```
-
-A Chaser destroyed by direct collision with the player does not award points.
-
----
-
-## Match Duration
-
-The match duration can be selected in the Options screen.
-
-Available durations:
-
-```text
-60 seconds
-90 seconds
-120 seconds
-180 seconds
-```
-
-The match ends when:
-
-- The timer reaches zero
-- The player loses all HP
-
----
-
-## Pause System
-
-The game can be paused manually using:
-
-```text
-P
-```
-
-The game also pauses automatically when:
-
-- The browser window loses focus
-- The user changes browser tabs
-
-While paused, the simulation stops.
-
-This includes:
-
-- Player movement
-- Enemy movement
-- Projectiles
-- Match timer
-- Spawn timer
-
----
-
-## Application Screens
-
-The application contains:
+The app includes:
 
 - Main Menu
+- Level Selection
 - Game
 - Options
 - Results
 - Ranking
 - Match History
 
-React manages application navigation while PixiJS manages real-time gameplay.
+React handles the screens and regular UI. PixiJS handles the game loop, canvas rendering, collisions, enemies, projectiles and visual effects.
 
----
+## Mocked API and persistence
 
-## API Simulation
-
-The project uses Mock Service Worker to simulate a backend API.
+The project uses Mock Service Worker to simulate the backend.
 
 Available routes:
 
@@ -319,87 +147,32 @@ GET /api/ranking
 POST /api/matches
 ```
 
-The API layer uses Axios.
+The API client uses Axios, and TanStack Query handles loading states, cache and invalidation.
 
-TanStack Query is used for:
+Since there is no real backend, match results and settings are stored in `localStorage`. This keeps ranking and match history available after refreshing the page.
 
-- API requests
-- Loading states
-- Error states
-- Mutations
-- Cache management
-- Query invalidation
+One detail worth noting: local development and the deployed Vercel URL use different browser storage, so their ranking/history data will not be shared.
 
----
+## Match submission
 
-## Persistence
+Match submission uses an `Idempotency-Key` based on the player name and finish date.
 
-Because the backend is simulated, match data is stored in browser localStorage.
+This avoids duplicated records when the same match result is submitted more than once.
 
-This allows ranking and match history to remain available after refreshing the page.
+## Tests
 
-Game settings are also persisted.
+The Playwright suite covers the main application flow:
 
-Important:
+- loading the main menu;
+- opening Options;
+- opening Ranking;
+- opening Match History;
+- opening Level Selection;
+- starting a game;
+- pausing and returning to the menu;
+- checking that the PixiJS canvas renders.
 
-```text
-localhost and the deployed Vercel domain use separate browser storage.
-```
-
----
-
-## Idempotency
-
-Match submission includes an:
-
-```text
-Idempotency-Key
-```
-
-The key is based on:
-
-```text
-playerName + finishedAt
-```
-
-This helps prevent duplicate processing of the same match submission.
-
----
-
-## Testing
-
-End-to-end tests are implemented using Playwright.
-
-Install the Chromium browser if needed:
-
-```bash
-npx playwright install chromium
-```
-
-Run the automated tests:
-
-```bash
-npm run test:e2e
-```
-
-Run Playwright in UI mode:
-
-```bash
-npm run test:e2e:ui
-```
-
-Current E2E coverage includes:
-
-- Main menu
-- Options navigation
-- Ranking navigation
-- Match History navigation
-- Starting a game
-- PixiJS canvas rendering
-
----
-
-## Project Structure
+## Project structure
 
 ```text
 src/
@@ -412,7 +185,8 @@ src/
 │   ├── GameCanvas.tsx
 │   ├── PlayerShip.ts
 │   ├── Projectile.ts
-│   └── ShooterShip.ts
+│   ├── ShooterShip.ts
+│   └── shipTextures.ts
 │
 ├── mocks/
 │   ├── browser.ts
@@ -430,58 +204,25 @@ tests/
 
 ARCHITECTURE.md
 playwright.config.ts
+vite.config.ts
 ```
-
----
 
 ## Architecture
 
-A more detailed explanation of the project architecture and technical decisions is available in:
+The main split is simple:
 
 ```text
-ARCHITECTURE.md
+React  -> menus, forms, navigation, ranking and history
+PixiJS -> gameplay, rendering, collisions, projectiles and entities
 ```
 
-The main architectural decision is the separation between:
-
-```text
-React → application UI and navigation
-PixiJS → real-time game simulation and rendering
-```
-
----
-
-## Frame-rate Independence
-
-Game movement and timers use PixiJS delta time:
-
-```ts
-const deltaSeconds = ticker.deltaMS / 1000
-```
-
-This prevents gameplay speed from being directly tied to frame rate.
-
----
-
-## Responsive Design
-
-The PixiJS game uses an internal resolution of:
-
-```text
-1280 x 720
-```
-
-The canvas scales responsively while preserving a 16:9 aspect ratio.
-
-The application also includes responsive layouts for mobile devices and specific adjustments for landscape orientation.
-
----
+More details are documented in `ARCHITECTURE.md`.
 
 ## Deployment
 
-The project is deployed using Vercel.
+The game is deployed on Vercel.
 
-Build command:
+Production build command:
 
 ```bash
 npm run build
@@ -493,54 +234,22 @@ Output directory:
 dist
 ```
 
-MSW is enabled in production so the mocked API remains functional in the deployed version.
+MSW is enabled in production so the ranking and match history mocks keep working on the published URL.
 
----
+## Trade-offs
 
-## Technical Trade-offs
+This is still a compact challenge project, so a few choices were kept intentionally lightweight:
 
-This project was developed under the time constraints of a technical challenge.
+- collision is based on simple radius checks;
+- ranking and history use localStorage instead of a real database;
+- enemy movement uses steering behavior instead of full pathfinding;
+- the game loop is centralized in the canvas component to keep the delivery focused.
 
-Some decisions intentionally prioritize simplicity and delivery.
-
-Examples:
-
-- Circular collision detection instead of a physics engine
-- localStorage instead of a real database
-- A central GameCanvas orchestrating several systems
-- Simple touch buttons instead of a virtual joystick
-- Lightweight enemy AI
-
-For a larger production game, these systems could be further separated and expanded.
-
----
-
-## Possible Improvements
-
-Future improvements could include:
-
-- Sound effects
-- Music
-- Particle effects
-- More enemy types
-- Additional maps
-- Sprite-based islands
-- Difficulty progression
-- Virtual joystick
-- Additional Playwright tests
-- Visual regression testing
-- Unit tests
-- Performance profiling
-- Real backend persistence
-- Online ranking
-
----
+Those choices keep the project easy to run, review and deploy while still providing a complete playable experience.
 
 ## Author
 
 Luiz Paulo Pereira
-
-GitHub:
 
 ```text
 https://github.com/sissithebrazilian
